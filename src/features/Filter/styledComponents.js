@@ -34,7 +34,12 @@ const Footer = styled.div`
   justify-content: space-between;
   border-top: 1px solid #eaeaf0;
   font-family: 'Roboto', sans-serif;
+  /* flex: 0; */
+  /* position: absolute; */
+  /* bottom: 0; */
+
   flex: 0;
+  background: green;
 `;
 
 const Header = styled.div`
@@ -42,6 +47,8 @@ const Header = styled.div`
   width: 100%;
   padding: 20px 24px 16px 24px;
   background: white;
+  border-top-left-radius: 12px;
+  overflow: hidden;
   h2 {
     margin: 0;
     padding: 0;
@@ -58,6 +65,12 @@ const Content = styled.ul`
   ${listStyle};
   box-sizing: border-box;
   width: 100%;
+
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
   font-family: 'Roboto', sans-serif;
   li,
   span {
@@ -124,13 +137,22 @@ const List = styled.ul`
 const CollectionContainer = styled.div`
   ${flex};
   box-sizing: border-box;
-  border-radius: 12px;
   max-width: 240px;
   width: 100%;
-  overflow: hidden;
   background: white;
   ${truncate}
+  height: 100%;
   font-family: 'Roboto', sans-serif;
+  border-right: 1px solid red;
+  padding-bottom: 100px;
+  background: red;
+  position: relative;
+  padding-bottom: 100px
+    ${props =>
+      props.isFirst &&
+      css`
+        border-right: 1px solid green;
+      `};
 `;
 
 export {

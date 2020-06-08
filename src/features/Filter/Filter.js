@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Icon from '../../common/Icon';
 import ClickOutside from '../../hooks/clickOutside';
 import {
@@ -63,7 +63,12 @@ const Actions = ({ actions = [], onPress = () => {} }) => {
   );
 };
 
-const Collection = ({ data = {}, callback = () => {} }) => {
+const Collection = ({
+  data = {},
+  isFirst = false,
+  elRef,
+  callback = () => {}
+}) => {
   const [selected, setSelected] = useState(null);
   const [parentId, setParentId] = useState(null);
 
@@ -80,11 +85,11 @@ const Collection = ({ data = {}, callback = () => {} }) => {
   if (!length(data?.items)) return <></>;
 
   return (
-    <CollectionContainer>
-      <Header>
-        <h2>{data?.name || 'Panel Heading'}</h2>
-      </Header>
-      <Flex>
+    <div ref={elRef}>
+      <CollectionContainer isFirst={isFirst}>
+        <Header>
+          <h2>{data?.name || 'Panel Heading'}</h2>
+        </Header>
         <Content>
           {data?.items.map((collection, index) => {
             console.log('collection >>', collection._uid);
@@ -100,37 +105,48 @@ const Collection = ({ data = {}, callback = () => {} }) => {
           })}
         </Content>
         {data?.actions && <Actions actions={data?.actions} />}
-      </Flex>
-    </CollectionContainer>
+      </CollectionContainer>
+    </div>
   );
 };
 
 const Filter = ({ config = {}, onClose = () => {} }) => {
   const [selected, setSelected] = useState(null);
   const [collections, setCollections] = useState([]);
+  const [state, setState] = useState({});
+  const [elheight, setElHeight] = useState(0);
+  const el = useRef();
 
   const findById = id => pipe(values, find(propEq({ id })));
 
+  const onSelectChild = ({ parentId, id }) => {
+    setState(state => ({ ...state, [parentId]: id }));
+  };
+
+  console.log('STATE >>>>>>', state);
+
   const onSelect = ({ parentId, selectedItem }) => {
     const id = selectedItem?._uid;
+    setSelected(id);
+    onSelectChild({ parentId, id });
+
     if (id === selected) {
       console.log('it is the same...');
-      console.log(
-        'rejection >>>',
-        reject(o => o._uid === parentId, collections)
-      );
       setCollections(reject(item => item._uid === parentId, collections));
       return;
-      // console.log('findById ::', findById(parentId)(collections));
     }
-    console.log('not the same >>', selectedItem);
-    setSelected(selectedItem?._uid);
+    console.log('Not the same >>', selectedItem);
+
     fetchResults();
   };
 
   useEffect(() => {
+    console.log(el);
+    setElHeight(el.current.clientHeight);
+  }, [elheight]);
+
+  useEffect(() => {
     setCollections(config?.collections);
-    // console.log('collections', config?.collections);
   }, [config]);
 
   // Make redux action creator call
@@ -177,11 +193,13 @@ const Filter = ({ config = {}, onClose = () => {} }) => {
     <Container>
       <ClickOutside callback={onClose}>
         <Panel width={length(collections) * 240}>
-          {collections?.map(collection => (
+          {collections?.map((collection, index) => (
             <Collection
               key={collection?._uid}
               callback={onSelect}
               data={collection}
+              isFirst={index === 0}
+              elRef={el}
             />
           ))}
         </Panel>
